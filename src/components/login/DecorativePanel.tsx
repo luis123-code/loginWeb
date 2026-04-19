@@ -1,5 +1,5 @@
 import { Sparkles, Calendar, ShieldCheck } from "lucide-react";
-import { Logo } from "./Logo";
+import { Logo } from "@/components/Logo";
 
 const bullets = [
   { Icon: Sparkles, text: "Gestión completa de pacientes" },
