@@ -96,20 +96,21 @@
   }
   html, body {
     @apply bg-background text-foreground;
-    /* Gotham is a paid font; Montserrat is its closest free Google Fonts equivalent (geometric sans-serif). */
-    font-family: 'Gotham', 'Gotham SSm', 'Montserrat', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     letter-spacing: -0.005em;
   }
   h1, h2, h3, h4, .font-display {
-    font-family: 'Gotham', 'Gotham SSm', 'Montserrat', system-ui, sans-serif;
-    font-weight: 700;
+    font-family: 'Fraunces', 'Times New Roman', Georgia, serif;
+    font-weight: 500;
+    font-variation-settings: 'opsz' 144, 'SOFT' 50;
     letter-spacing: -0.025em;
   }
   .font-serif-display {
-    font-family: 'DM Serif Display', Georgia, serif;
+    font-family: 'Fraunces', Georgia, serif;
     font-weight: 400;
+    font-style: italic;
     letter-spacing: -0.01em;
   }
 }

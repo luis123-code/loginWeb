@@ -12,9 +12,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["'Gotham'", "'Gotham SSm'", "'Montserrat'", "system-ui", "sans-serif"],
-        sans: ["'Gotham'", "'Gotham SSm'", "'Montserrat'", "system-ui", "sans-serif"],
-        serif: ["'DM Serif Display'", "Georgia", "serif"],
+        display: ["'Fraunces'", "Georgia", "serif"],
+        sans: ["'Inter'", "system-ui", "sans-serif"],
+        serif: ["'Fraunces'", "Georgia", "serif"],
       },
       colors: {
         border: "hsl(var(--border))",
