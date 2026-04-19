@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -96,10 +96,18 @@
   }
   html, body {
     @apply bg-background text-foreground;
-    font-family: 'DM Sans', system-ui, sans-serif;
+    /* Gotham is a paid font; Montserrat is its closest free Google Fonts equivalent (geometric sans-serif). */
+    font-family: 'Gotham', 'Gotham SSm', 'Montserrat', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.005em;
   }
   h1, h2, h3, h4, .font-display {
+    font-family: 'Gotham', 'Gotham SSm', 'Montserrat', system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+  .font-serif-display {
     font-family: 'DM Serif Display', Georgia, serif;
     font-weight: 400;
     letter-spacing: -0.01em;
@@ -173,9 +181,65 @@
 @keyframes ripple {
   to { transform: scale(4); opacity: 0; }
 }
+/* Heartbeat — life / health */
+@keyframes heartbeat {
+  0%, 40%, 100% { transform: scale(1); }
+  10%           { transform: scale(1.18); }
+  20%           { transform: scale(0.96); }
+  30%           { transform: scale(1.08); }
+}
+
+/* ECG line drawing — vital signs across the panel */
+@keyframes ecg-draw {
+  0%   { stroke-dashoffset: 1200; opacity: 0.9; }
+  60%  { stroke-dashoffset: 0;    opacity: 0.9; }
+  100% { stroke-dashoffset: 0;    opacity: 0; }
+}
+
+/* Footprint trail — at-home visit */
+@keyframes footprint-step {
+  0%, 100% { opacity: 0; transform: translateY(8px) rotate(var(--rot, 0deg)); }
+  10%, 70% { opacity: 0.55; transform: translateY(0) rotate(var(--rot, 0deg)); }
+  90%      { opacity: 0; transform: translateY(-4px) rotate(var(--rot, 0deg)); }
+}
+
+/* Briefcase rocking — house-call kit */
+@keyframes briefcase-walk {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-4px) rotate(2deg); }
+}
+
+/* Soft glowing orb pulse */
+@keyframes orb-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50%      { opacity: 0.7;  transform: scale(1.08); }
+}
+
+/* Map dotted route drawing */
+@keyframes route-dash {
+  to { stroke-dashoffset: -40; }
+}
+
+/* Slow rotation */
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+
+/* Concentric ripple rings */
+@keyframes ring-expand {
+  0%   { transform: scale(0.6); opacity: 0.6; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
 .animate-wave-slow      { animation: wave-slow 12s ease-in-out infinite; }
 .animate-float-particle { animation: float-particle linear infinite; }
 .animate-shake          { animation: shake 0.45s cubic-bezier(.36,.07,.19,.97) both; }
+.animate-heartbeat      { animation: heartbeat 1.6s ease-in-out infinite; transform-origin: center; }
+.animate-ecg            { stroke-dasharray: 1200; animation: ecg-draw 5s linear infinite; }
+.animate-footprint      { animation: footprint-step 6s ease-in-out infinite both; }
+.animate-briefcase      { animation: briefcase-walk 1.4s ease-in-out infinite; transform-origin: 50% 80%; }
+.animate-orb-pulse      { animation: orb-pulse 4s ease-in-out infinite; }
+.animate-route          { stroke-dasharray: 6 8; animation: route-dash 1.6s linear infinite; }
+.animate-spin-slow      { animation: spin-slow 30s linear infinite; }
+.animate-ring-expand    { animation: ring-expand 3.5s ease-out infinite; transform-origin: center; }
 
 .ripple {
   position: absolute;
