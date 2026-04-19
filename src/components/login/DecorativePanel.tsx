@@ -71,6 +71,7 @@ const AnimatedScene = () => (
 
       {/* Dotted route from briefcase to home */}
       <path
+        id="deliveryRoute"
         d="M 90 220 Q 180 120, 300 175"
         fill="none"
         stroke="hsl(177 67% 51%)"
@@ -100,6 +101,90 @@ const AnimatedScene = () => (
           <ellipse cx="0" cy="10" rx="4" ry="5" fill="white" fillOpacity="0.7" />
         </g>
       ))}
+
+      {/* Medical delivery van traveling the route to the home */}
+      <g>
+        {/* Van body, drawn centered at (0,0); animateMotion will move + rotate it along the path */}
+        <g transform="translate(-22,-12)">
+          {/* shadow */}
+          <ellipse cx="22" cy="22" rx="20" ry="2.5" fill="hsl(174 41% 9%)" fillOpacity="0.35" />
+          {/* cargo box */}
+          <rect x="2" y="0" width="30" height="18" rx="3" fill="white" />
+          {/* hood / cabin */}
+          <path
+            d="M 32 4 L 42 4 Q 46 4 46 9 L 46 18 L 32 18 Z"
+            fill="hsl(177 67% 92%)"
+          />
+          {/* windshield */}
+          <path
+            d="M 34 6 L 41 6 Q 44 6 44 9 L 44 12 L 34 12 Z"
+            fill="hsl(174 41% 9%)"
+            fillOpacity="0.55"
+          />
+          {/* medical cross on cargo */}
+          <g transform="translate(15, 9)">
+            <rect x="-1.5" y="-5" width="3" height="10" rx="0.5" fill="hsl(177 69% 42%)" />
+            <rect x="-5" y="-1.5" width="10" height="3" rx="0.5" fill="hsl(177 69% 42%)" />
+          </g>
+          {/* headlight glow */}
+          <circle cx="46" cy="14" r="1.5" fill="#fff8b0">
+            <animate
+              attributeName="opacity"
+              values="0.5;1;0.5"
+              dur="1.2s"
+              repeatCount="indefinite"
+            />
+          </circle>
+          {/* wheels with spinning hubs */}
+          <g transform="translate(10, 19)">
+            <circle r="3.2" fill="hsl(174 41% 9%)" />
+            <line
+              x1="-2"
+              y1="0"
+              x2="2"
+              y2="0"
+              stroke="white"
+              strokeWidth="0.8"
+              strokeLinecap="round"
+            >
+              <animateTransform
+                attributeName="transform"
+                type="rotate"
+                from="0"
+                to="360"
+                dur="0.4s"
+                repeatCount="indefinite"
+              />
+            </line>
+          </g>
+          <g transform="translate(38, 19)">
+            <circle r="3.2" fill="hsl(174 41% 9%)" />
+            <line
+              x1="-2"
+              y1="0"
+              x2="2"
+              y2="0"
+              stroke="white"
+              strokeWidth="0.8"
+              strokeLinecap="round"
+            >
+              <animateTransform
+                attributeName="transform"
+                type="rotate"
+                from="0"
+                to="360"
+                dur="0.4s"
+                repeatCount="indefinite"
+              />
+            </line>
+          </g>
+        </g>
+
+        {/* Move the van along the route, repeating */}
+        <animateMotion dur="6s" repeatCount="indefinite" rotate="auto">
+          <mpath href="#deliveryRoute" />
+        </animateMotion>
+      </g>
 
       {/* Stylized home (destination) */}
       <g transform="translate(285, 145)">
