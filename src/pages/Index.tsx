@@ -17,8 +17,8 @@ const LoginPage = () => {
           {/* Mobile gradient header */}
           <div className="bg-gradient-decorative px-6 pb-10 pt-8 lg:hidden">
             <Logo size="sm" variant="light" />
-            <p className="mt-4 font-display text-2xl text-white">
-              Atención podológica profesional
+            <p className="mt-4 font-display text-2xl font-bold text-white">
+              Atención podológica profesional a domicilio
             </p>
           </div>
 
@@ -32,7 +32,7 @@ const LoginPage = () => {
             <div className="w-full max-w-md animate-fade-in-up">
               <div className="rounded-2xl bg-white/70 p-8 shadow-soft backdrop-blur-sm sm:p-10 lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-none">
                 <header className="mb-8 space-y-2">
-                  <h2 className="font-display text-3xl text-foreground sm:text-4xl">
+                  <h2 className="font-display text-[34px] font-bold leading-tight tracking-tight text-foreground sm:text-[38px]">
                     Bienvenido de vuelta
                   </h2>
                   <p className="text-[15px] text-muted-foreground">
