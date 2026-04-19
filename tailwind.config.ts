@@ -12,9 +12,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["'Fraunces'", "Georgia", "serif"],
+        display: ["'Manrope'", "'Inter'", "system-ui", "sans-serif"],
         sans: ["'Inter'", "system-ui", "sans-serif"],
-        serif: ["'Fraunces'", "Georgia", "serif"],
+        serif: ["'Manrope'", "'Inter'", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
