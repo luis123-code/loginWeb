@@ -3,11 +3,13 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import { Logo } from "@/components/Logo";
 import { apiService } from "@/services/ApiService";
+import { useAuth } from "@/context/AuthContext";
 
 const Callback = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { handleRedirectCallback, getIdTokenClaims } = useAuth0();
+  const { login } = useAuth();
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -50,8 +52,8 @@ const Callback = () => {
                 return;
               }
             }
-            localStorage.setItem('authToken', idTokenClaims.__raw);
-            console.log("ID token guardado en localStorage desde Callback");
+            login(idTokenClaims.__raw);
+            console.log("ID token guardado en contexto y localStorage desde Callback");
           }
         } catch (tokenError) {
           console.error("Error al obtener id_token:", tokenError);

@@ -4,6 +4,8 @@ import { Auth0Provider } from "@auth0/auth0-react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/context/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index.tsx";
 import Bienvenida from "./pages/Bienvenida.tsx";
 import Callback from "./pages/Callback.tsx";
@@ -33,18 +35,27 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/bienvenida" element={<Bienvenida />} />
-            <Route path="/callback" element={<Callback />} />
-            <Route path="/verificado" element={<Verificado />} />
-            <Route path="/advertencia" element={<Advertencia />} />
-            <Route path="/logout" element={<Logout />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/bienvenida" element={<Bienvenida />} />
+              <Route path="/callback" element={<Callback />} />
+              <Route
+                path="/verificado"
+                element={
+                  <ProtectedRoute>
+                    <Verificado />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/advertencia" element={<Advertencia />} />
+              <Route path="/logout" element={<Logout />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
       </TooltipProvider>
     </Auth0Provider>
   </QueryClientProvider>

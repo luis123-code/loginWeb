@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
 import { Logo } from "@/components/Logo";
+import { useAuth } from "@/context/AuthContext";
 
 // Verificar y decodificar token JWT
 const verifyToken = (token: string): { valid: boolean; decoded?: any; expired?: boolean } => {
@@ -26,7 +27,8 @@ const verifyToken = (token: string): { valid: boolean; decoded?: any; expired?: 
 };
 
 const Verificado = () => {
-  const { logout } = useAuth0();
+  const { logout: auth0Logout } = useAuth0();
+  const { token, logout } = useAuth();
   const navigate = useNavigate();
   const [nocoDbUser, setNocoDbUser] = useState<any>(null);
   const [shouldShow, setShouldShow] = useState(false);
@@ -34,7 +36,6 @@ const Verificado = () => {
 
   const handleRedirect = () => {
     setRedirecting(true);
-    const token = localStorage.getItem('authToken');
     setTimeout(() => {
       if (token) {
         window.location.href = `${import.meta.env.VITE_APP_URL || 'http://localhost:8080'}/?token=${encodeURIComponent(token)}`;
@@ -51,36 +52,30 @@ const Verificado = () => {
 
     if (tokenFromUrl === 'true') {
       console.log("[Verificado] Logout signal received: ?token=true");
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userEmail');
-      localStorage.removeItem('failedAttempts');
-      localStorage.removeItem('ipBlocked');
+      logout();
       window.history.replaceState({}, '', window.location.pathname);
       console.log("[Verificado] Session keys cleared from localStorage");
     }
-  }, []);
+  }, [logout]);
 
-  // Verificar token de localStorage - sin llamar APIs
+  // Verificar token del contexto - sin llamar APIs
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    
     if (!token) {
       navigate("/advertencia");
       return;
     }
-    
+
     const verification = verifyToken(token);
-    
+
     if (!verification.valid) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userEmail');
+      logout();
       navigate("/advertencia");
       return;
     }
-    
+
     setNocoDbUser(verification.decoded.data);
     setShouldShow(true);
-  }, [navigate]);
+  }, [token, logout, navigate]);
 
   return (
     <div className="min-h-screen w-full bg-background flex items-center justify-center">
@@ -150,9 +145,8 @@ const Verificado = () => {
 
           <button
             onClick={() => {
-              localStorage.removeItem('userEmail');
-              localStorage.removeItem('authToken');
-              logout({ logoutParams: { returnTo: window.location.origin } });
+              logout();
+              auth0Logout({ logoutParams: { returnTo: window.location.origin } });
             }}
             className="w-full px-6 py-3 bg-transparent text-foreground rounded-lg font-semibold hover:bg-gray-100 transition-colors"
           >

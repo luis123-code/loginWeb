@@ -1,18 +1,17 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Logo } from "@/components/Logo";
+import { useAuth } from "@/context/AuthContext";
 
 const Logout = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   useEffect(() => {
     console.log("Cierre de sesión solicitado desde otro sistema");
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('failedAttempts');
-    localStorage.removeItem('ipBlocked');
+    logout();
     navigate("/", { replace: true });
-  }, [navigate]);
+  }, [logout, navigate]);
 
   return (
     <div className="min-h-screen w-full bg-background flex items-center justify-center">

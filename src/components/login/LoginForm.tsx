@@ -7,6 +7,7 @@ import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { FloatingLabelInput } from "./FloatingLabelInput";
 import { SocialLoginButton, GoogleIcon } from "./SocialLoginButton";
 import { apiService } from "@/services/ApiService";
+import { useAuth } from "@/context/AuthContext";
 
 interface LoginFormValues {
   email: string;
@@ -50,6 +51,7 @@ export const LoginForm = () => {
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [isBlocked, setIsBlocked] = useState(false);
   const { loginWithRedirect } = useAuth0();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const {
@@ -107,8 +109,8 @@ export const LoginForm = () => {
       localStorage.removeItem('failedAttempts');
       // Generar y guardar token JWT
       const token = generateToken(values.email, response);
-      localStorage.setItem('authToken', token);
-      console.log("Token generado y guardado en localStorage");
+      login(token);
+      console.log("Token generado y guardado en contexto y localStorage");
       console.log("Redirigiendo a /verificado...");
       // Redirigir a verificado
       window.location.href = "/verificado";
