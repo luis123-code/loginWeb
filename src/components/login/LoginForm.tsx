@@ -1,9 +1,12 @@
-import { useState, MouseEvent } from "react";
+import { useState, MouseEvent, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import { useAuth0 } from "@auth0/auth0-react";
+import { useNavigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { FloatingLabelInput } from "./FloatingLabelInput";
 import { SocialLoginButton, GoogleIcon } from "./SocialLoginButton";
+import { apiService } from "@/services/ApiService";
 
 interface LoginFormValues {
   email: string;
@@ -13,10 +16,41 @@ interface LoginFormValues {
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Generar token JWT simple
+const generateToken = (email: string, userData: any): string => {
+  const header = { alg: "HS256", typ: "JWT" };
+  const timestamp = Math.floor(Date.now() / 1000);
+  
+  // Extraer solo nombre y email de la respuesta de NocoDB
+  const userInfo = {
+    nombre: userData?.records?.[0]?.fields?.nombre || '',
+    email: email
+  };
+  
+  const payload = {
+    sub: email,
+    email: email,
+    iat: timestamp,
+    exp: timestamp + 86400, // 24 horas
+    data: userInfo
+  };
+  
+  const encode = (obj: any) => btoa(JSON.stringify(obj)).replace(/=/g, '');
+  const headerEncoded = encode(header);
+  const payloadEncoded = encode(payload);
+  const signature = btoa(`${headerEncoded}.${payloadEncoded}`).replace(/=/g, '');
+  
+  return `${headerEncoded}.${payloadEncoded}.${signature}`;
+};
+
 export const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const { loginWithRedirect } = useAuth0();
+  const navigate = useNavigate();
 
   const {
     register,
@@ -26,6 +60,12 @@ export const LoginForm = () => {
     mode: "onChange",
     defaultValues: { email: "", password: "", remember: true },
   });
+
+  useEffect(() => {
+    const attempts = parseInt(localStorage.getItem('failedAttempts') || '0');
+    setFailedAttempts(attempts);
+    setIsBlocked(attempts >= 3);
+  }, []);
 
   // Ripple effect on button click
   const triggerRipple = (e: MouseEvent<HTMLButtonElement>) => {
@@ -42,20 +82,56 @@ export const LoginForm = () => {
     setTimeout(() => circle.remove(), 600);
   };
 
-  const onSubmit = async (_values: LoginFormValues) => {
+  const onSubmit = async (values: LoginFormValues) => {
+    // Verificar si la cuenta ya está bloqueada
+    const currentAttempts = parseInt(localStorage.getItem('failedAttempts') || '0');
+    if (currentAttempts >= 3) {
+      window.location.reload();
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // TODO: integrate Auth0 — loginWithRedirect()
-      await new Promise((r) => setTimeout(r, 1200));
-      toast.error("Credenciales incorrectas", {
+      const response = await apiService.sendCredentials(values.email, values.password);
+      console.log("Login exitoso, respuesta:", response);
+      toast.success("Credenciales enviadas correctamente", {
         style: {
-          background: "hsl(0 78% 58%)",
+          background: "hsl(142 76% 36%)",
           color: "white",
           fontFamily: "'DM Sans', sans-serif",
           fontWeight: 500,
           borderRadius: "12px",
         },
       });
+      // Limpiar contador de intentos fallidos si el login es exitoso
+      localStorage.removeItem('failedAttempts');
+      // Generar y guardar token JWT
+      const token = generateToken(values.email, response);
+      localStorage.setItem('authToken', token);
+      console.log("Token generado y guardado en localStorage");
+      console.log("Redirigiendo a /verificado...");
+      // Redirigir a verificado
+      window.location.href = "/verificado";
+    } catch (error) {
+      console.error("Error al enviar credenciales:", error);
+
+      // Incrementar contador de intentos fallidos
+      const failedAttempts = parseInt(localStorage.getItem('failedAttempts') || '0') + 1;
+      localStorage.setItem('failedAttempts', failedAttempts.toString());
+
+      if (failedAttempts >= 3) {
+        window.location.reload();
+      } else {
+        toast.error(`Usuario y contraseña fallido (${failedAttempts}/3)`, {
+          style: {
+            background: "hsl(0 78% 58%)",
+            color: "white",
+            fontFamily: "'DM Sans', sans-serif",
+            fontWeight: 500,
+            borderRadius: "12px",
+          },
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -64,12 +140,16 @@ export const LoginForm = () => {
   const handleGoogle = async () => {
     setIsGoogleLoading(true);
     try {
-      // TODO: loginWithRedirect({ authorizationParams: { connection: 'google-oauth2' }})
-      await new Promise((r) => setTimeout(r, 800));
-      toast("Conectando con Google…", {
-        icon: "🔐",
+      await loginWithRedirect({
+        authorizationParams: {
+          connection: 'google-oauth2'
+        }
+      });
+    } catch (error) {
+      console.error("Error al iniciar sesión con Google:", error);
+      toast.error("Error al conectar con Google", {
         style: {
-          background: "hsl(177 69% 42%)",
+          background: "hsl(0 78% 58%)",
           color: "white",
           fontFamily: "'DM Sans', sans-serif",
           fontWeight: 500,
@@ -150,13 +230,6 @@ export const LoginForm = () => {
             Recordarme
           </span>
         </label>
-
-        <button
-          type="button"
-          className="text-sm font-medium text-primary transition-colors hover:text-primary-dark"
-        >
-          ¿Olvidaste tu contraseña?
-        </button>
       </div>
 
       <button
@@ -185,9 +258,9 @@ export const LoginForm = () => {
       <SocialLoginButton
         icon={isGoogleLoading ? <Loader2 className="h-5 w-5 animate-spin text-primary" /> : <GoogleIcon />}
         onClick={handleGoogle}
-        disabled={isGoogleLoading}
+        disabled={isGoogleLoading || isBlocked}
       >
-        {isGoogleLoading ? "Conectando…" : "Continuar con Google"}
+        {isBlocked ? "Cuenta bloqueada" : isGoogleLoading ? "Conectando…" : `Continuar con Google${failedAttempts > 0 ? ` (${failedAttempts}/3)` : ''}`}
       </SocialLoginButton>
     </form>
   );

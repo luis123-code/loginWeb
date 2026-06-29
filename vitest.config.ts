@@ -4,12 +4,21 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
+  
+  server: {
+    allowedHosts: ["all"],  // permite ngrok y cualquier host externo
+    cors: true,
+    host: true,             // escucha en 0.0.0.0
+    port: 5173,
+  },
+
   test: {
     environment: "jsdom",
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
   },
+
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },
   },
