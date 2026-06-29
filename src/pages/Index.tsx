@@ -18,14 +18,19 @@ const LoginPage = () => {
     setIsIpBlocked(ipBlocked);
   }, []);
 
-  // Borrar token cuando llega ?token=true
+  // Borrar sesión cuando llega ?token=true
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tokenFromUrl = params.get('token');
-    
+
     if (tokenFromUrl === 'true') {
+      console.log("[Index] Logout signal received: ?token=true");
       localStorage.removeItem('authToken');
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('failedAttempts');
+      localStorage.removeItem('ipBlocked');
       window.history.replaceState({}, '', window.location.pathname);
+      console.log("[Index] Session keys cleared from localStorage");
     }
   }, []);
   return (

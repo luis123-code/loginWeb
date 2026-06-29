@@ -9,6 +9,7 @@ import Bienvenida from "./pages/Bienvenida.tsx";
 import Callback from "./pages/Callback.tsx";
 import Verificado from "./pages/Verificado.tsx";
 import Advertencia from "./pages/Advertencia.tsx";
+import Logout from "./pages/Logout.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/callback" element={<Callback />} />
             <Route path="/verificado" element={<Verificado />} />
             <Route path="/advertencia" element={<Advertencia />} />
+            <Route path="/logout" element={<Logout />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

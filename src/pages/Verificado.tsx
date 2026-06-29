@@ -44,14 +44,19 @@ const Verificado = () => {
     }, 1000);
   };
 
-  // Borrar token cuando llega ?token=true
+  // Borrar sesión cuando llega ?token=true
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tokenFromUrl = params.get('token');
-    
+
     if (tokenFromUrl === 'true') {
+      console.log("[Verificado] Logout signal received: ?token=true");
       localStorage.removeItem('authToken');
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('failedAttempts');
+      localStorage.removeItem('ipBlocked');
       window.history.replaceState({}, '', window.location.pathname);
+      console.log("[Verificado] Session keys cleared from localStorage");
     }
   }, []);
 
