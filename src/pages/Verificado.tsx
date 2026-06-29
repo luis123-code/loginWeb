@@ -146,7 +146,12 @@ const Verificado = () => {
           <button
             onClick={() => {
               logout();
-              auth0Logout({ logoutParams: { returnTo: window.location.origin } });
+              auth0Logout({
+                logoutParams: {
+                  returnTo: window.location.origin,
+                  federated: true,
+                },
+              });
             }}
             className="w-full px-6 py-3 bg-transparent text-foreground rounded-lg font-semibold hover:bg-gray-100 transition-colors"
           >
