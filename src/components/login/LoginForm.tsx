@@ -93,7 +93,6 @@ export const LoginForm = () => {
     setIsSubmitting(true);
     try {
       const response = await apiService.sendCredentials(values.email, values.password);
-      console.log("Login exitoso, respuesta:", response);
       toast.success("Credenciales enviadas correctamente", {
         style: {
           background: "hsl(142 76% 36%)",
@@ -108,13 +107,9 @@ export const LoginForm = () => {
       // Generar y guardar token JWT
       const token = generateToken(values.email, response);
       localStorage.setItem('authToken', token);
-      console.log("Token generado y guardado en localStorage");
-      console.log("Redirigiendo a /verificado...");
       // Redirigir a verificado
       window.location.href = "/verificado";
     } catch (error) {
-      console.error("Error al enviar credenciales:", error);
-
       // Incrementar contador de intentos fallidos
       const failedAttempts = parseInt(localStorage.getItem('failedAttempts') || '0') + 1;
       localStorage.setItem('failedAttempts', failedAttempts.toString());
@@ -138,7 +133,6 @@ export const LoginForm = () => {
   };
 
   const handleGoogleSuccess = async (tokenResponse: TokenResponse) => {
-    console.log("Respuesta de Google login:", tokenResponse);
     setIsGoogleLoading(true);
     try {
       const accessToken = tokenResponse.access_token;
@@ -151,7 +145,6 @@ export const LoginForm = () => {
       }
 
       const userInfo = await userInfoResponse.json();
-      console.log("Información de usuario de Google:", userInfo);
 
       if (!userInfo.email) {
         toast.error("No se pudo obtener el email de Google", {
@@ -172,7 +165,6 @@ export const LoginForm = () => {
       }
 
       const response = await apiService.findByGoogleSub(userInfo.sub);
-      console.log("Respuesta de NocoDB por google_sub:", response);
 
       if (!response.records || response.records.length === 0) {
         throw new Error("Usuario no encontrado");
@@ -180,15 +172,12 @@ export const LoginForm = () => {
 
       localStorage.removeItem('failedAttempts');
       const token = generateToken(userInfo.email, response, userInfo);
-      console.log("Token generado:", token);
       localStorage.setItem('authToken', token);
       if (userInfo.picture) {
         sessionStorage.setItem('userPicture', userInfo.picture);
       }
       window.location.href = "/verificado";
     } catch (error) {
-      console.error("Error al iniciar sesión con Google:", error);
-
       const failedAttempts = parseInt(localStorage.getItem('failedAttempts') || '0') + 1;
       localStorage.setItem('failedAttempts', failedAttempts.toString());
       setFailedAttempts(failedAttempts);

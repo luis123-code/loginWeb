@@ -19,7 +19,6 @@ const verifyToken = (token: string): { valid: boolean; decoded?: any; expired?: 
     
     return { valid: true, decoded: payload };
   } catch (error) {
-    console.error("Error al verificar token:", error);
     return { valid: false };
   }
 };
@@ -57,7 +56,6 @@ const Verificado = () => {
   // Verificar token de localStorage - sin llamar APIs
   useEffect(() => {
     const token = localStorage.getItem('authToken');
-    console.log("Token en localStorage:", token);
     
     if (!token) {
       navigate("/advertencia");
@@ -65,7 +63,6 @@ const Verificado = () => {
     }
     
     const verification = verifyToken(token);
-    console.log("Verificación del token:", verification);
     
     if (!verification.valid) {
       localStorage.removeItem('authToken');
@@ -75,7 +72,6 @@ const Verificado = () => {
     }
     
     setNocoDbUser(verification.decoded.data);
-    console.log("Datos de usuario decodificados:", verification.decoded.data);
     setUserPicture(sessionStorage.getItem('userPicture'));
     setShouldShow(true);
   }, [navigate]);

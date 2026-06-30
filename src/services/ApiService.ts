@@ -24,10 +24,7 @@ class ApiService {
     // Interceptor para manejar errores
     this.client.interceptors.response.use(
       (response) => response,
-      (error) => {
-        console.error("API Error:", error);
-        return Promise.reject(error);
-      }
+      (error) => Promise.reject(error)
     );
   }
 
@@ -51,7 +48,6 @@ class ApiService {
       );
       return response.data;
     } catch (error) {
-      console.error(`Error finding record by auth0_sub ${auth0Sub}:`, error);
       throw error;
     }
   }
@@ -76,7 +72,6 @@ class ApiService {
 
       return response.data;
     } catch (error) {
-      console.error("Error al enviar credenciales:", error);
       throw error;
     }
   }
@@ -95,7 +90,6 @@ class ApiService {
       );
       return response.data;
     } catch (error) {
-      console.error(`Error finding record by email ${email}:`, error);
       throw error;
     }
   }
@@ -114,7 +108,6 @@ class ApiService {
       );
       return response.data;
     } catch (error) {
-      console.error(`Error finding record by google_sub ${googleSub}:`, error);
       throw error;
     }
   }
@@ -128,7 +121,6 @@ class ApiService {
       );
       return response.data;
     } catch (error) {
-      console.error(`Error fetching data from ${tableName}:`, error);
       throw error;
     }
   }
@@ -141,7 +133,6 @@ class ApiService {
       );
       return response.data;
     } catch (error) {
-      console.error(`Error fetching record ${recordId} from ${tableName}:`, error);
       throw error;
     }
   }
@@ -155,7 +146,6 @@ class ApiService {
       );
       return response.data;
     } catch (error) {
-      console.error(`Error creating record in ${tableName}:`, error);
       throw error;
     }
   }
@@ -169,7 +159,6 @@ class ApiService {
       );
       return response.data;
     } catch (error) {
-      console.error(`Error updating record ${recordId} in ${tableName}:`, error);
       throw error;
     }
   }
@@ -182,7 +171,6 @@ class ApiService {
       );
       return response.data;
     } catch (error) {
-      console.error(`Error deleting record ${recordId} from ${tableName}:`, error);
       throw error;
     }
   }
@@ -195,7 +183,6 @@ class ApiService {
       );
       return response.data;
     } catch (error) {
-      console.error(`Error fetching table info for ${tableName}:`, error);
       throw error;
     }
   }
@@ -208,7 +195,6 @@ class ApiService {
       );
       return response.data;
     } catch (error) {
-      console.error("Error fetching tables:", error);
       throw error;
     }
   }
@@ -219,7 +205,6 @@ class ApiService {
       const response = await this.client.request(config);
       return response.data;
     } catch (error) {
-      console.error("API request error:", error);
       throw error;
     }
   }
