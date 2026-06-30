@@ -1,13 +1,11 @@
 import { useState, MouseEvent, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
+import { useGoogleLogin, TokenResponse } from "@react-oauth/google";
 import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { FloatingLabelInput } from "./FloatingLabelInput";
-import { SocialLoginButton, GoogleIcon } from "./SocialLoginButton";
 import { apiService } from "@/services/ApiService";
-import { useAuth } from "@/context/AuthContext";
 
 interface LoginFormValues {
   email: string;
@@ -18,14 +16,16 @@ interface LoginFormValues {
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Generar token JWT simple
-const generateToken = (email: string, userData: any): string => {
+const generateToken = (email: string, userData: any, googleInfo?: any): string => {
   const header = { alg: "HS256", typ: "JWT" };
   const timestamp = Math.floor(Date.now() / 1000);
   
-  // Extraer solo nombre y email de la respuesta de NocoDB
+  // Extraer información del usuario desde NocoDB o Google
   const userInfo = {
-    nombre: userData?.records?.[0]?.fields?.nombre || '',
-    email: email
+    nombre: userData?.records?.[0]?.fields?.nombre || googleInfo?.name || '',
+    email: email,
+    givenName: googleInfo?.given_name || '',
+    familyName: googleInfo?.family_name || ''
   };
   
   const payload = {
@@ -50,8 +50,6 @@ export const LoginForm = () => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [isBlocked, setIsBlocked] = useState(false);
-  const { loginWithRedirect } = useAuth0();
-  const { login } = useAuth();
   const navigate = useNavigate();
 
   const {
@@ -109,8 +107,8 @@ export const LoginForm = () => {
       localStorage.removeItem('failedAttempts');
       // Generar y guardar token JWT
       const token = generateToken(values.email, response);
-      login(token);
-      console.log("Token generado y guardado en contexto y localStorage");
+      localStorage.setItem('authToken', token);
+      console.log("Token generado y guardado en localStorage");
       console.log("Redirigiendo a /verificado...");
       // Redirigir a verificado
       window.location.href = "/verificado";
@@ -139,17 +137,85 @@ export const LoginForm = () => {
     }
   };
 
-  const handleGoogle = async () => {
+  const handleGoogleSuccess = async (tokenResponse: TokenResponse) => {
+    console.log("Respuesta de Google login:", tokenResponse);
     setIsGoogleLoading(true);
     try {
-      await loginWithRedirect({
-        authorizationParams: {
-          connection: 'google-oauth2'
-        }
+      const accessToken = tokenResponse.access_token;
+      const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${accessToken}` }
       });
+
+      if (!userInfoResponse.ok) {
+        throw new Error("No se pudo obtener información de Google");
+      }
+
+      const userInfo = await userInfoResponse.json();
+      console.log("Información de usuario de Google:", userInfo);
+
+      if (!userInfo.email) {
+        toast.error("No se pudo obtener el email de Google", {
+          style: {
+            background: "hsl(0 78% 58%)",
+            color: "white",
+            fontFamily: "'DM Sans', sans-serif",
+            fontWeight: 500,
+            borderRadius: "12px",
+          },
+        });
+        return;
+      }
+
+      // Buscar en NocoDB solo por google_sub
+      if (!userInfo.sub) {
+        throw new Error("No se recibió el identificador de Google");
+      }
+
+      const response = await apiService.findByGoogleSub(userInfo.sub);
+      console.log("Respuesta de NocoDB por google_sub:", response);
+
+      if (!response.records || response.records.length === 0) {
+        throw new Error("Usuario no encontrado");
+      }
+
+      localStorage.removeItem('failedAttempts');
+      const token = generateToken(userInfo.email, response, userInfo);
+      console.log("Token generado:", token);
+      localStorage.setItem('authToken', token);
+      if (userInfo.picture) {
+        sessionStorage.setItem('userPicture', userInfo.picture);
+      }
+      window.location.href = "/verificado";
     } catch (error) {
       console.error("Error al iniciar sesión con Google:", error);
-      toast.error("Error al conectar con Google", {
+
+      const failedAttempts = parseInt(localStorage.getItem('failedAttempts') || '0') + 1;
+      localStorage.setItem('failedAttempts', failedAttempts.toString());
+      setFailedAttempts(failedAttempts);
+      setIsBlocked(failedAttempts >= 3);
+
+      if (failedAttempts >= 3) {
+        window.location.reload();
+      } else {
+        toast.error(`Usuario no registrado (${failedAttempts}/3)`, {
+          style: {
+            background: "hsl(0 78% 58%)",
+            color: "white",
+            fontFamily: "'DM Sans', sans-serif",
+            fontWeight: 500,
+            borderRadius: "12px",
+          },
+        });
+      }
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: handleGoogleSuccess,
+    onError: () => {
+      toast.error("Error al iniciar sesión con Google", {
         style: {
           background: "hsl(0 78% 58%)",
           color: "white",
@@ -158,10 +224,10 @@ export const LoginForm = () => {
           borderRadius: "12px",
         },
       });
-    } finally {
-      setIsGoogleLoading(false);
-    }
-  };
+    },
+    flow: 'implicit',
+    scope: 'openid email profile',
+  });
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
@@ -257,13 +323,36 @@ export const LoginForm = () => {
         <div className="h-px flex-1 bg-border" />
       </div>
 
-      <SocialLoginButton
-        icon={isGoogleLoading ? <Loader2 className="h-5 w-5 animate-spin text-primary" /> : <GoogleIcon />}
-        onClick={handleGoogle}
-        disabled={isGoogleLoading || isBlocked}
+      <button
+        type="button"
+        onClick={() => googleLogin()}
+        disabled={isBlocked || isGoogleLoading}
+        className="group flex h-[52px] w-full items-center justify-center gap-3 rounded-xl
+        border-[1.5px] border-primary bg-white px-5 text-[15px] font-medium text-foreground
+        transition-all duration-200 hover:bg-primary/5 hover:shadow-soft
+        focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20
+        disabled:opacity-60"
       >
-        {isBlocked ? "Cuenta bloqueada" : isGoogleLoading ? "Conectando…" : `Continuar con Google${failedAttempts > 0 ? ` (${failedAttempts}/3)` : ''}`}
-      </SocialLoginButton>
+        {isGoogleLoading ? (
+          <>
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+            <span>Verificando...</span>
+          </>
+        ) : (
+          <>
+            <span className="shrink-0">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.75h3.57c2.08-1.92 3.28-4.74 3.28-8.07z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.75c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.12c-.22-.66-.35-1.36-.35-2.12s.13-1.46.35-2.12V7.04H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.96l3.66-2.84z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.04l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z" />
+              </svg>
+            </span>
+            <span>Continuar con Google</span>
+          </>
+        )}
+      </button>
+
     </form>
   );
 };

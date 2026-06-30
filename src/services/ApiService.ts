@@ -100,6 +100,25 @@ class ApiService {
     }
   }
 
+  // Buscar registro por google_sub
+  async findByGoogleSub(googleSub: string) {
+    try {
+      const whereClause = `(google_sub,eq,${googleSub})`;
+      const response = await this.client.get(
+        `/api/v3/data/${this.baseId}/${this.tableId}/records`,
+        {
+          params: {
+            where: whereClause
+          }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error(`Error finding record by google_sub ${googleSub}:`, error);
+      throw error;
+    }
+  }
+
   // Obtener todos los registros de una tabla
   async getTableData(tableName: string, params?: any) {
     try {

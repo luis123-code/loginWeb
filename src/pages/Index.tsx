@@ -3,14 +3,12 @@ import { Toaster } from "react-hot-toast";
 import { DecorativePanel } from "@/components/login/DecorativePanel";
 import { LoginForm } from "@/components/login/LoginForm";
 import { Logo } from "@/components/Logo";
-import { useAuth } from "@/context/AuthContext";
 import { Shield, Lock, AlertTriangle, Skull } from "lucide-react";
 
 const LoginPage = () => {
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [isBlocked, setIsBlocked] = useState(false);
   const [isIpBlocked, setIsIpBlocked] = useState(false);
-  const { logout } = useAuth();
 
   useEffect(() => {
     const attempts = parseInt(localStorage.getItem('failedAttempts') || '0');
@@ -20,18 +18,16 @@ const LoginPage = () => {
     setIsIpBlocked(ipBlocked);
   }, []);
 
-  // Borrar sesión cuando llega ?token=true
+  // Borrar token cuando llega ?token=true
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tokenFromUrl = params.get('token');
-
+    
     if (tokenFromUrl === 'true') {
-      console.log("[Index] Logout signal received: ?token=true");
-      logout();
+      localStorage.removeItem('authToken');
       window.history.replaceState({}, '', window.location.pathname);
-      console.log("[Index] Session keys cleared from localStorage");
     }
-  }, [logout]);
+  }, []);
   return (
     <div className="min-h-screen w-full bg-background">
       <Toaster position="top-right" />
