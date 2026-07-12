@@ -49,7 +49,6 @@ export const LoginForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
-  const [isBlocked, setIsBlocked] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -64,7 +63,6 @@ export const LoginForm = () => {
   useEffect(() => {
     const attempts = parseInt(localStorage.getItem('failedAttempts') || '0');
     setFailedAttempts(attempts);
-    setIsBlocked(attempts >= 3);
   }, []);
 
   // Ripple effect on button click
@@ -83,13 +81,6 @@ export const LoginForm = () => {
   };
 
   const onSubmit = async (values: LoginFormValues) => {
-    // Verificar si la cuenta ya está bloqueada
-    const currentAttempts = parseInt(localStorage.getItem('failedAttempts') || '0');
-    if (currentAttempts >= 3) {
-      window.location.reload();
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       const response = await apiService.sendCredentials(values.email, values.password);
@@ -114,19 +105,15 @@ export const LoginForm = () => {
       const failedAttempts = parseInt(localStorage.getItem('failedAttempts') || '0') + 1;
       localStorage.setItem('failedAttempts', failedAttempts.toString());
 
-      if (failedAttempts >= 3) {
-        window.location.reload();
-      } else {
-        toast.error(`Usuario y contraseña fallido (${failedAttempts}/3)`, {
-          style: {
-            background: "hsl(0 78% 58%)",
-            color: "white",
-            fontFamily: "'DM Sans', sans-serif",
-            fontWeight: 500,
-            borderRadius: "12px",
-          },
-        });
-      }
+      toast.error(`Usuario y contraseña fallido (${failedAttempts}/3)`, {
+        style: {
+          background: "hsl(0 78% 58%)",
+          color: "white",
+          fontFamily: "'DM Sans', sans-serif",
+          fontWeight: 500,
+          borderRadius: "12px",
+        },
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -181,21 +168,16 @@ export const LoginForm = () => {
       const failedAttempts = parseInt(localStorage.getItem('failedAttempts') || '0') + 1;
       localStorage.setItem('failedAttempts', failedAttempts.toString());
       setFailedAttempts(failedAttempts);
-      setIsBlocked(failedAttempts >= 3);
 
-      if (failedAttempts >= 3) {
-        window.location.reload();
-      } else {
-        toast.error(`Usuario no registrado (${failedAttempts}/3)`, {
-          style: {
-            background: "hsl(0 78% 58%)",
-            color: "white",
-            fontFamily: "'DM Sans', sans-serif",
-            fontWeight: 500,
-            borderRadius: "12px",
-          },
-        });
-      }
+      toast.error(`Usuario no registrado (${failedAttempts}/3)`, {
+        style: {
+          background: "hsl(0 78% 58%)",
+          color: "white",
+          fontFamily: "'DM Sans', sans-serif",
+          fontWeight: 500,
+          borderRadius: "12px",
+        },
+      });
     } finally {
       setIsGoogleLoading(false);
     }
@@ -315,7 +297,7 @@ export const LoginForm = () => {
       <button
         type="button"
         onClick={() => googleLogin()}
-        disabled={isBlocked || isGoogleLoading}
+        disabled={isGoogleLoading}
         className="group flex h-[52px] w-full items-center justify-center gap-3 rounded-xl
         border-[1.5px] border-primary bg-white px-5 text-[15px] font-medium text-foreground
         transition-all duration-200 hover:bg-primary/5 hover:shadow-soft
