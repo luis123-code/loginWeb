@@ -50,9 +50,8 @@ const LoginPage = () => {
           <div className="flex flex-1 items-center justify-center px-6 py-10 sm:px-10 lg:px-12">
             <div className="w-full max-w-md animate-fade-in-up">
               <div className="rounded-2xl bg-white/70 p-8 shadow-soft backdrop-blur-sm sm:p-10 lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-none">
-                {
-                  <>
-                    <header className="mb-8 space-y-2">
+                <>
+                  <header className="mb-8 space-y-2">
                       <h2 className="font-display text-[34px] font-bold leading-tight tracking-tight text-foreground sm:text-[38px]">
                         Bienvenido de vuelta
                       </h2>
